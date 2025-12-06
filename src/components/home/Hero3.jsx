@@ -1,8 +1,8 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import earth from "../../../public/images/earth.png";
-import process from "../../../public/images/process.png";
+import earth from "../../../public/images/homepage/earth.png";
+import process from "../../../public/images/homepage/process.png";
 const HeroSection = () => {
   const [mounted, setMounted] = useState(false);
 
@@ -128,7 +128,7 @@ const HeroSection = () => {
             alt="process"
             unoptimized={true}
             className="w-[80%] h-full mt-3 object-contain mx-2 "
-            quality={100}
+            quality={85}
             loading="lazy"
           />
         </div>

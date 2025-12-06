@@ -3,59 +3,64 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, Quote } from "lucide-react";
-
+import mark from "../../../public/images/homepage/mark.png";
+import bajaj from "../../../public/images/homepage/bajaj.png";
+import chola from "../../../public/images/homepage/chola.png";
+import finance from "../../../public/images/homepage/finance.png";
+import tata from "../../../public/images/homepage/tata.png";
+import ghairam from "../../../public/images/homepage/ghairam.png";
 // --- Data ---
 const testimonials = [
   {
     id: 1,
     name: "Mark Debrovski",
     designation: "CEO, FinTech Global",
-    image: "/images/mark.png",
+    image: mark ,
     text: "The loan process was incredibly smooth. I expected hurdles, but Remitout made it seamless. Highly recommended for any student abroad.",
   },
   {
     id: 2,
     name: "Sarah Jenkins",
     designation: "Student, Oxford Univ",
-    image: "/images/mark.png",
+    image:  mark ,
     text: "Transparent fees and fast transfers. It saved me so much anxiety during my first semester tuition payment. Truly a lifesaver.",
   },
   {
     id: 3,
     name: "Rahul Sharma",
     designation: "MS Student, Berlin",
-    image: "/images/mark.png",
+    image: mark ,
     text: "I love the dashboard! Tracking my loan disbursement in real-time gave me peace of mind. The support team is also very responsive.",
   },
   {
     id: 4,
     name: "Emily Chen",
     designation: "Parent",
-    image: "/images/mark.png",
+    image: mark ,
     text: "As a parent, sending money abroad is stressful. Remitout's security features and instant notifications kept me assured throughout.",
   },
   {
     id: 5,
     name: "David Okonjo",
     designation: "Entrepreneur",
-    image: "/images/mark.png",
+    image: mark ,
     text: "They offer the best FX rates in the market. I compared multiple vendors, but Remitout was the clear winner for business transactions.",
   },
   {
     id: 6,
     name: "Priya Patel",
     designation: "Design Student, NY",
-    image: "/images/mark.png",
+    image:  mark ,
     text: "Fast, simple, and reliable. The mobile interface is beautiful and easy to use. I wouldn't use any other service for my education loans.",
   },
 ];
 
 const partners = [
-  { name: "Bajaj Finserv", src: "/images/bajaj.png" },
-  { name: "Jio Financial", src: "/images/finance.png" },
-  { name: "Shriram Finance", src: "/images/ghairam.png" },
-  { name: "Chola", src: "/images/chola.png" },
-  { name: "Tata Capital", src: "/images/tata.png" },
+  { name: "Bajaj Finserv", src: bajaj },
+  { name: "Jio Financial", src: finance },
+  { name: "Shriram Finance", src: ghairam },
+  { name: "Chola", src: chola },
+  { name: "Tata Capital", src: tata },
 ];
 
 // --- Sub-Components ---
@@ -239,7 +244,6 @@ const Hero2 = () => {
                   alt={partner.name}
                   fill
                   className="object-contain"
-                  
                   loading="lazy"
                 />
               </div>

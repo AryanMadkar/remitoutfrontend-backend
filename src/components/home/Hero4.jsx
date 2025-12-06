@@ -3,9 +3,9 @@
 import Image from "next/image";
 
 // Replace these with your actual image imports
-import campusImg from "../../../public/images/uplayer.png"; // Top: Radcliffe Camera
-import studentsImg from "../../../public/images/middlelayer.png"; // Middle: Students with tablet
-import graduationImg from "../../../public/images/lowerlayer.png"; // Bottom: Graduation hats
+import campusImg from "../../../public/images/homepage/uplayer.png"; // Top: Radcliffe Camera
+import studentsImg from "../../../public/images/homepage/middlelayer.png"; // Middle: Students with tablet
+import graduationImg from "../../../public/images/homepage/lowerlayer.png"; // Bottom: Graduation hats
 
 const SafetySmartLendingSection = () => {
   const features = [
@@ -13,7 +13,16 @@ const SafetySmartLendingSection = () => {
       title: "Integrated Support, Anytime, Anywhere",
       desc: "Instant support builds trust and enhances experience!",
       icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
           <circle cx="12" cy="10" r="3" />
         </svg>
@@ -23,7 +32,16 @@ const SafetySmartLendingSection = () => {
       title: "Rapid Processing",
       desc: "Easy student remittance in just a few steps!",
       icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
           <line x1="16" y1="2" x2="16" y2="6" />
           <line x1="8" y1="2" x2="8" y2="6" />
@@ -41,7 +59,16 @@ const SafetySmartLendingSection = () => {
       title: "Best Price Commitment",
       desc: "Transparent, competitive exchange rates guaranteed!",
       icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <rect width="7" height="7" x="3" y="3" rx="1" />
           <rect width="7" height="7" x="14" y="3" rx="1" />
           <rect width="7" height="7" x="14" y="14" rx="1" />
@@ -53,7 +80,16 @@ const SafetySmartLendingSection = () => {
       title: "Absolutely Protected",
       desc: "Instant transfers, no fees, 24/7 support!",
       icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
           <path d="M7 11V7a5 5 0 0 1 10 0v4" />
         </svg>
@@ -64,10 +100,10 @@ const SafetySmartLendingSection = () => {
   return (
     <section className="relative w-full overflow-hidden bg-[#fff9f4] py-16 md:py-24">
       {/* --- Decorative Background Elements --- */}
-      
+
       {/* Top-left large peach blob */}
       <div className="absolute -left-[10%] -top-[10%] h-[600px] w-[600px] rounded-full bg-[#ffe8d4] opacity-60 blur-3xl" />
-      
+
       {/* Bottom-right soft pink blob */}
       <div className="absolute -right-[10%] bottom-0 h-[500px] w-[500px] rounded-full bg-[#fff0f0] opacity-80 blur-3xl" />
 
@@ -76,7 +112,6 @@ const SafetySmartLendingSection = () => {
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 md:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between lg:gap-16">
-          
           {/* === LEFT COLUMN === */}
           <div className="w-full lg:w-[45%]">
             <h2 className="mb-8 text-3xl font-extrabold leading-[1.15] text-[#0f172a] md:text-4xl lg:text-5xl">
@@ -117,7 +152,6 @@ const SafetySmartLendingSection = () => {
           {/* === RIGHT COLUMN (Collage) === */}
           <div className="relative mt-16 flex w-full justify-center lg:mt-0 lg:w-[50%]">
             <div className="relative w-full max-w-lg lg:max-w-none">
-              
               {/* 1. Purple Dashed Circle (Behind Top Image) */}
               <div className="absolute -right-4 top-[-20px] h-32 w-32 animate-spin-slow lg:right-[10%] lg:top-[-40px]">
                 <svg viewBox="0 0 100 100" className="h-full w-full rotate-12">
@@ -139,7 +173,7 @@ const SafetySmartLendingSection = () => {
                   src={campusImg}
                   alt="Radcliffe Camera"
                   className="h-auto w-full object-cover"
-                  priority
+                  loading="lazy"
                 />
               </div>
 
@@ -149,21 +183,22 @@ const SafetySmartLendingSection = () => {
                   src={studentsImg}
                   alt="Students with tablet"
                   className="h-auto w-full object-cover"
+                  loading="lazy"
                 />
               </div>
 
               {/* 4. Bottom Image: Graduation (Below) */}
               <div className="relative z-0 ml-auto mt-[-40px] w-[75%] overflow-hidden rounded-b-[2.5rem] rounded-tr-[2.5rem] pt-24 shadow-xl lg:mt-[-60px]">
-                 {/* Note: pt-24 creates space for the overlap so we don't hide heads */}
-                 <div className="relative overflow-hidden rounded-3xl">
-                    <Image
-                      src={graduationImg}
-                      alt="Graduation"
-                      className="h-auto w-full object-cover"
-                    />
-                 </div>
+                {/* Note: pt-24 creates space for the overlap so we don't hide heads */}
+                <div className="relative overflow-hidden rounded-3xl">
+                  <Image
+                    src={graduationImg}
+                    alt="Graduation"
+                    className="h-auto w-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
               </div>
-
             </div>
           </div>
         </div>

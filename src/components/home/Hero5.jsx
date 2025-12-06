@@ -4,7 +4,7 @@ import Image from "next/image";
 import { User, Building2, Flag, Smile } from "lucide-react";
 
 // swap this with your actual PNG of the girl + suitcase (with transparent background)
-import travelerImg from "../../../public/images/travelingstudent.png";
+import travelerImg from "../../../public/images/homepage/travelingstudent.png";
 
 const stats = [
   { value: "500+", label: "Students", icon: User },

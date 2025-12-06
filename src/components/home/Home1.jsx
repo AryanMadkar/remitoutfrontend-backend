@@ -2,18 +2,17 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Briefcase, PlayCircle } from "lucide-react"; 
+import { Briefcase, PlayCircle } from "lucide-react";
 // Make sure to install lucide-react: npm install lucide-react
-import home1bg from "../../../public/images/home1bg.png";
+import home1bg from "../../../public/images/homepage/home1bg.png";
 const Hero = () => {
   return (
     <section className="relative flex min-h-screen w-full items-center justify-center overflow-hidden pt-20">
-      
       {/* 1. Background Image */}
       <div className="absolute inset-0 -z-20">
         {/* Replace '/images/hero-bg.jpg' with the path to your graduation caps image */}
         <Image
-          src={home1bg} 
+          src={home1bg}
           alt="Students throwing caps"
           fill
           priority
@@ -24,11 +23,10 @@ const Hero = () => {
       {/* 2. Purple/Dark Overlay */}
       {/* This creates the 'purplish' dark tint seen in the design */}
       <div className="absolute inset-0 -z-10 bg-purple-900/60 mix-blend-multiply" />
-      <div className="absolute inset-0 -z-10 bg-black/40" /> 
+      <div className="absolute inset-0 -z-10 bg-black/40" />
 
       {/* 3. Content Container */}
       <div className="container mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 md:grid-cols-2 md:px-12">
-        
         {/* Left Side: Main Text */}
         <div className="flex flex-col items-start text-left">
           <h1 className="text-5xl font-bold leading-tight text-white md:text-6xl lg:text-7xl">
@@ -44,7 +42,6 @@ const Hero = () => {
 
         {/* Right Side: Tagline & Subtext & Buttons */}
         <div className="flex flex-col items-start justify-center space-y-8 md:pl-10 lg:pl-16">
-          
           {/* Floating Badge */}
           <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm">
             <Briefcase size={16} className="text-white" />
@@ -53,8 +50,9 @@ const Hero = () => {
 
           {/* Description */}
           <p className="max-w-md text-lg leading-relaxed text-gray-200">
-            Trusted by 15,000+ students across India, Remitout is your partner 
-            in securing the financial support you need to succeed in your studies.
+            Trusted by 15,000+ students across India, Remitout is your partner
+            in securing the financial support you need to succeed in your
+            studies.
           </p>
 
           {/* Hero Buttons */}
@@ -68,9 +66,7 @@ const Hero = () => {
             </Link>
 
             {/* Glass/Outline Button */}
-            <button
-              className="flex items-center gap-2 rounded-lg border border-white/30 bg-white/10 px-8 py-4 text-sm font-bold text-white backdrop-blur-md transition-colors hover:bg-white/20"
-            >
+            <button className="flex items-center gap-2 rounded-lg border border-white/30 bg-white/10 px-8 py-4 text-sm font-bold text-white backdrop-blur-md transition-colors hover:bg-white/20">
               <PlayCircle size={20} />
               <span>Watch Demo</span>
             </button>

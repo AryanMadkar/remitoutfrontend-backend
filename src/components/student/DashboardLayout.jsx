@@ -1,23 +1,30 @@
 "use client";
+
 import { useState } from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./navbar";
+import ProfileDrawer from "./ProfileDrawer";
 
 export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white">
-      {" "}
-      {/* Changed from gray-50 to white for cleaner look */}
+    <div className="min-h-screen bg-orange-50">
+      {/* Sidebar */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="flex-1 flex flex-col lg:pl-64 min-h-screen transition-all duration-300">
-        <Navbar onMenuClick={() => setSidebarOpen(true)} userName="Harish M" />
 
-        <main className="flex-1 p-4 lg:p-8 pt-20 bg-gray-50/50">
-          {children}
-        </main>
+      {/* Main content area */}
+      <div className="lg:pl-64">
+        <Navbar
+          onMenuClick={() => setSidebarOpen(true)}
+          onProfileClick={() => setProfileOpen(true)}
+        />
+        <main className="p-4 lg:p-8">{children}</main>
       </div>
+
+      {/* Profile drawer – only opens when profile icon is clicked */}
+      <ProfileDrawer isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
     </div>
   );
 }

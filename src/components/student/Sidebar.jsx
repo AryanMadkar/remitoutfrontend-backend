@@ -1,110 +1,136 @@
-'use client';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Inbox, 
-  FileText, 
-  LogOut, 
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  Inbox,
+  FileText,
+  LogOut,
   HeadphonesIcon,
-  X 
-} from 'lucide-react';
+  X,
+} from "lucide-react";
 
 export default function Sidebar({ isOpen, onClose }) {
   const pathname = usePathname();
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', href: '/student/dashbord' },
-    { icon: Inbox, label: 'Inbox', href: '/student/dashbord/inbox' },
-    { icon: FileText, label: 'My Applications', href: '/student/dashbord/myapplication' },
+    { icon: LayoutDashboard, label: "Dashboard", href: "/student/dashbord" },
+    { icon: Inbox, label: "Inbox", href: "/student/dashbord/inbox" },
+    {
+      icon: FileText,
+      label: "My Applications",
+      href: "/student/dashbord/myapplication",
+    },
   ];
 
   const bottomItems = [
-    { icon: LogOut, label: 'Log out', href: '/logout' },
-    { icon: HeadphonesIcon, label: 'Support', href: '/student/dashbord/support' },
+    { icon: HeadphonesIcon, label: "Support", href: "/student/dashbord/support" },
+    { icon: LogOut, label: "Log out", href: "/logout" },
   ];
+
+  // Only Dashboard is exact; others are active for child routes too
+  const isActive = (href) => {
+    if (href === "/student/dashbord") {
+      return pathname === href;
+    }
+    return pathname === href || pathname.startsWith(href + "/");
+  };
 
   return (
     <>
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
           onClick={onClose}
         />
       )}
 
-      {/* Sidebar Container */}
+      {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-white border-r border-orange-100 z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-orange-100 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* Logo Area */}
-        <div className="h-16 flex items-center px-6 border-b border-orange-100">
-          <div className="flex items-center gap-2 font-bold text-2xl tracking-tight text-gray-800">
-            <div className="w-8 h-8 bg-orange-500 rounded flex items-center justify-center text-white">R</div>
-            <span>REMITOUT</span>
+        <div className="flex h-full flex-col">
+          {/* Logo */}
+          <div className="flex h-16 items-center justify-between px-6 border-b border-orange-100">
+            <Link href="/student/dashbord" className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
+                <span className="text-white font-bold text-lg">S</span>
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
+                Student
+              </span>
+            </Link>
+            <button
+              onClick={onClose}
+              className="lg:hidden p-1 hover:bg-orange-50 rounded-lg transition-colors"
+              aria-label="Close menu"
+            >
+              <X className="h-5 w-5 text-gray-500" />
+            </button>
           </div>
-           
-          {/* Close Button (Mobile Only) */}
-          <button
-            onClick={onClose}
-            className="absolute right-4 top-4 lg:hidden text-gray-500 hover:text-orange-500"
-          >
-            <X size={24} />
-          </button>
-        </div>
 
-        <div className="flex flex-col h-[calc(100%-4rem)] justify-between py-6">
-          {/* Main Navigation */}
-          <nav className="space-y-2 px-3">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
-                    isActive
-                      ? 'bg-orange-500 text-white shadow-md shadow-orange-200'
-                      : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600'
-                  }`}
-                >
-                  <Icon 
-                    size={20} 
-                    className={isActive ? 'text-white' : 'text-gray-400 group-hover:text-orange-500'} 
-                  />
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              );
-            })}
+          {/* Main menu */}
+          <nav className="flex-1 overflow-y-auto py-4 px-3">
+            <ul className="space-y-1">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.href);
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      onClick={onClose}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                        active
+                          ? "bg-orange-50 text-orange-700 border border-orange-200"
+                          : "text-gray-700 hover:bg-orange-50"
+                      }`}
+                    >
+                      <Icon
+                        className={`h-5 w-5 ${
+                          active ? "text-orange-600" : "text-gray-500"
+                        }`}
+                      />
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           </nav>
 
-          {/* Bottom Actions */}
-          <div className="px-3 space-y-2">
-            <div className="h-px bg-orange-100 my-2 mx-2" />
-            
-            {bottomItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-orange-50 hover:text-orange-600 transition-colors group"
-                >
-                  <Icon 
-                    size={20} 
-                    className="text-gray-400 group-hover:text-orange-500" 
-                  />
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              );
-            })}
+          {/* Bottom items */}
+          <div className="border-t border-orange-100 p-3">
+            <ul className="space-y-1">
+              {bottomItems.map((item) => {
+                const Icon = item.icon;
+                const isLogout = item.label === "Log out";
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      onClick={onClose}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                        isLogout
+                          ? "text-red-600 hover:bg-red-50"
+                          : "text-gray-700 hover:bg-orange-50"
+                      }`}
+                    >
+                      <Icon
+                        className={`h-5 w-5 ${
+                          isLogout ? "text-red-500" : "text-gray-500"
+                        }`}
+                      />
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </div>
       </aside>

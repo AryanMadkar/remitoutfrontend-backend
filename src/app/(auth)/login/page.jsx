@@ -1,314 +1,146 @@
+// app/(auth)/login/page.jsx
 "use client";
+
 import React from "react";
 import Image from "next/image";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 import banner from "../../../../public/images/login/iamge.png";
 
 const Page = () => {
+  const router = useRouter();
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    // Your submit logic here
-    setTimeout(() => setIsLoading(false), 2000);
+    setError("");
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email");
+    const password = formData.get("password");
+
+    try {
+      const res = await axios.post("/api/auth/login", { email, password });
+      const data = res.data;
+
+      if (!data.success) {
+        setError(data.message || "Login failed");
+        return;
+      }
+
+      const redirectPath = data.data?.redirectPath || "/student/dashboard";
+
+      // Cookie is already set by backend, just navigate
+      router.push(redirectPath);
+    } catch (err) {
+      console.error(err);
+      setError(
+        err.response?.data?.message ||
+          "Network or server error. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen w-full bg-gray-100 flex flex-col md:flex-row">
-      {/* Left image + quote */}
-      <div className="relative w-full md:w-1/2 h-[40vh] md:h-auto md:min-h-screen">
-        {/* Background image */}
+    <div className="min-h-screen w-full flex flex-col md:flex-row">
+      {/* Left image section (same as before) */}
+      <div className="relative w-full md:w-[60%] h-[40vh] md:h-screen">
         <Image
           src={banner}
-          alt="Student studying abroad"
+          alt="Student login"
           fill
+          quality={100}
           priority
+          sizes="100vw"
           className="object-cover"
         />
-
-        {/* Gradient overlay */}
-
-        {/* Text content */}
-        <div className="absolute inset-0 flex items-center px-6 md:px-10 lg:px-16">
-          <div className="max-w-md text-white space-y-6">
-            <div className="text-5xl md:text-6xl font-bold leading-none text-purple-300">
-              &ldquo;
-            </div>
-            <p className="text-xl md:text-2xl font-semibold leading-snug drop-shadow-lg">
-              Your Journey to
-              <br />
-              Global Education
-              <br />
-              Starts Here
-            </p>
-            <p className="text-sm md:text-base text-white/80 max-w-xs">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center text-white px-8 max-w-2xl">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
               Join thousands of students who achieved their dream of studying
               abroad.
-            </p>
+            </h2>
           </div>
         </div>
       </div>
 
       {/* Right form panel */}
-      <div className="w-full md:w-1/2 flex items-center justify-center bg-gradient-to-br from-white via-white to-purple-50 px-6 md:px-10 lg:px-20 py-10 md:py-0">
-        <div className="w-full max-w-md space-y-8">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <span className="text-4xl font-semibold text-orange-600">
-              Get Started Now
-            </span>
+      <div className="w-full md:w-[40%] flex items-center justify-center bg-white px-8 md:px-12 lg:px-16 py-10 md:py-0">
+        <div className="w-full max-w-md space-y-6">
+          {/* Logo & heading (same as your existing page) */}
+          <div className="flex justify-center md:justify-start">
+            <div className="w-12 h-12 relative">
+              <div className="absolute inset-0 rotate-45 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg" />
+              <div className="absolute inset-2 rotate-45 bg-white rounded-sm" />
+            </div>
           </div>
 
-          {/* Form */}
+          <div className="text-center md:text-left">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+              Welcome back
+            </h1>
+            <p className="text-gray-500 text-sm mt-1">Login to continue</p>
+          </div>
+
+          {error && (
+            <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded">
+              {error}
+            </p>
+          )}
+
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="space-y-1">
-              <label
-                htmlFor="name"
-                className="text-sm font-medium text-gray-700"
-              >
-                Full Name
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                </span>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  placeholder="John Doe"
-                  className="w-full rounded-lg border border-gray-200 pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 hover:border-gray-300"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label
-                htmlFor="phone"
-                className="text-sm font-medium text-gray-700"
-              >
-                Phone Number
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                    />
-                  </svg>
-                </span>
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  required
-                  placeholder="+91 98765 43210"
-                  className="w-full rounded-lg border border-gray-200 pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 hover:border-gray-300"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label
-                htmlFor="email"
-                className="text-sm font-medium text-gray-700"
-              >
-                Email Address
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
-                </span>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  placeholder="john@example.com"
-                  className="w-full rounded-lg border border-gray-200 pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 hover:border-gray-300"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label
-                htmlFor="password"
-                className="text-sm font-medium text-gray-700"
-              >
-                Password
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                    />
-                  </svg>
-                </span>
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  placeholder="••••••••"
-                  minLength={8}
-                  className="w-full rounded-lg border border-gray-200 pl-10 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 hover:border-gray-300"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                      />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              <p className="text-xs text-gray-400 mt-1">
-                Must be at least 8 characters
-              </p>
-            </div>
-
-            {/* Checkbox + terms */}
-            <label className="flex items-start gap-3 text-sm text-gray-600 cursor-pointer select-none group">
+            {/* Email input (use existing name="email") */}
+            <div>
               <input
-                type="checkbox"
+                type="email"
+                name="email"
+                placeholder="Email"
                 required
-                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 focus:ring-offset-0 transition-colors"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
               />
-              <span className="leading-tight">
-                I agree to the{" "}
-                <a
-                  href="/terms"
-                  className="text-purple-600 hover:text-purple-700 underline underline-offset-2"
-                >
-                  Terms of Service
-                </a>{" "}
-                and{" "}
-                <a
-                  href="/privacy"
-                  className="text-purple-600 hover:text-purple-700 underline underline-offset-2"
-                >
-                  Privacy Policy
-                </a>
-              </span>
-            </label>
+            </div>
 
-            {/* Button */}
+            {/* Password input (use existing name="password") */}
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                required
+                minLength={8}
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full rounded-lg bg-orange-500 text-white font-semibold py-3 text-sm transition-all duration-200 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/40 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3.5 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              {isLoading ? (
-                <>
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Creating account...
-                </>
-              ) : (
-                "Create Account"
-              )}
+              {isLoading ? "Logging in..." : "Sign In"}
             </button>
           </form>
 
-          {/* Sign in link */}
-          <p className="text-center text-sm text-gray-500">
-            Already have an account?{" "}
+          <p className="text-center text-sm text-gray-600 pt-2">
+            Don&apos;t have an account?{" "}
             <a
-              href="/login"
-              className="text-purple-600 hover:text-purple-700 font-semibold transition-colors"
+              href="/student/register"
+              className="text-orange-500 hover:text-orange-600 font-semibold hover:underline"
             >
-              Sign in
+              Sign Up
             </a>
           </p>
         </div>

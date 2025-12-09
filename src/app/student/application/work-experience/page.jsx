@@ -1,268 +1,449 @@
-// app/(student)/application/work-experience/page.js
-'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import ApplicationLayout from '@/components/ApplicationLayout';
-import { Briefcase, Plus, Trash2, Upload, CheckCircle } from 'lucide-react';
+// app/student/application/work/page.jsx
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { Briefcase, Plus, Trash2, Upload, Calendar, Building2 } from "lucide-react";
+import FormField from "@/components/application/FormField";
 
 export default function WorkExperiencePage() {
   const router = useRouter();
   const [hasExperience, setHasExperience] = useState(true);
   const [experiences, setExperiences] = useState([
-    { company: '', position: '', startDate: '', endDate: '', isCurrent: false, description: '', document: null },
+    {
+      id: 1,
+      company: "",
+      position: "",
+      startDate: "",
+      endDate: "",
+      isCurrent: false,
+      description: "",
+      salarySlips: [],
+      experienceLetter: null,
+    },
   ]);
 
   const addExperience = () => {
-    setExperiences([...experiences, { company: '', position: '', startDate: '', endDate: '', isCurrent: false, description: '', document: null }]);
+    setExperiences([
+      ...experiences,
+      {
+        id: Date.now(),
+        company: "",
+        position: "",
+        startDate: "",
+        endDate: "",
+        isCurrent: false,
+        description: "",
+        salarySlips: [],
+        experienceLetter: null,
+      },
+    ]);
   };
 
-  const removeExperience = (index) => {
-    setExperiences(experiences.filter((_, i) => i !== index));
+  const removeExperience = (id) => {
+    if (experiences.length > 1) {
+      setExperiences(experiences.filter((exp) => exp.id !== id));
+    }
   };
 
-  const updateExperience = (index, field, value) => {
-    const updated = [...experiences];
-    updated[index][field] = value;
-    setExperiences(updated);
+  const updateExperience = (id, field, value) => {
+    setExperiences(
+      experiences.map((exp) =>
+        exp.id === id ? { ...exp, [field]: value } : exp
+      )
+    );
   };
 
-  const handleFileUpload = async (index, file) => {
-    const formData = new FormData();
-    formData.append('file', file);
+  const handleFileUpload = async (file, experienceId, type) => {
+    // Simulate upload
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await res.json();
-      updateExperience(index, 'document', data.url);
-    } catch (error) {
-      alert('Upload failed');
+    const objectUrl = URL.createObjectURL(file);
+    
+    if (type === "salarySlip") {
+      setExperiences(
+        experiences.map((exp) =>
+          exp.id === experienceId
+            ? {
+                ...exp,
+                salarySlips: [
+                  ...exp.salarySlips,
+                  { id: Date.now(), url: objectUrl, name: file.name },
+                ],
+              }
+            : exp
+        )
+      );
+    } else if (type === "experienceLetter") {
+      setExperiences(
+        experiences.map((exp) =>
+          exp.id === experienceId
+            ? {
+                ...exp,
+                experienceLetter: {
+                  url: objectUrl,
+                  name: file.name,
+                },
+              }
+            : exp
+        )
+      );
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    const payload = hasExperience ? { experiences } : { hasExperience: false };
-    
-    const res = await fetch('/api/students/work-experience', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    
-    if (res.ok) {
-      router.push('/application/admission');
+    if (hasExperience) {
+      // Validate experiences
+      const isValid = experiences.every(
+        (exp) =>
+          exp.company &&
+          exp.position &&
+          exp.startDate &&
+          (exp.isCurrent || exp.endDate)
+      );
+      
+      if (!isValid) {
+        alert("Please fill in all required fields");
+        return;
+      }
     }
+    
+    // API call would go here
+    router.push("/student/application/admission");
   };
 
   return (
-    <ApplicationLayout currentStep={4}>
-      <motion.div
-        className="bg-white rounded-2xl shadow-xl p-8 border border-purple-100"
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-purple-100 rounded-xl">
-            <Briefcase className="w-8 h-8 text-purple-600" />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-8"
+    >
+      <div>
+        <div className="flex items-center space-x-3 mb-2">
+          <div className="p-2 bg-blue-50 rounded-lg">
+            <Briefcase className="w-5 h-5 text-blue-600" />
           </div>
-          <div>
-            <h2 className="text-2xl font-bold text-purple-900">Work Experience</h2>
-            <p className="text-purple-600 text-sm">Tell us about your professional background</p>
+          <div className="flex-1">
+            <h2 className="text-2xl font-light text-gray-900">
+              Work Experience
+            </h2>
+            <div className="flex items-center space-x-4 mt-2">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={!hasExperience}
+                  onChange={(e) => setHasExperience(!e.target.checked)}
+                  className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-600">
+                  I am a fresher (no work experience)
+                </span>
+              </label>
+            </div>
           </div>
         </div>
+        <p className="text-gray-600">
+          Add your professional background and upload supporting documents
+        </p>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Has Experience Toggle */}
-          <div className="p-4 bg-purple-50 rounded-xl">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={hasExperience}
-                onChange={(e) => setHasExperience(e.target.checked)}
-                className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
-              />
-              <span className="font-medium text-purple-900">
-                I have work experience
-              </span>
-            </label>
-          </div>
-
-          {hasExperience && (
-            <AnimatePresence>
-              {experiences.map((exp, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="p-6 border-2 border-purple-100 rounded-xl space-y-4 relative"
-                >
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {hasExperience && (
+          <AnimatePresence>
+            {experiences.map((exp, index) => (
+              <motion.div
+                key={exp.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, height: 0 }}
+                className="relative border border-gray-200 rounded-lg p-6 bg-white"
+              >
+                <div className="absolute top-4 right-4">
                   {experiences.length > 1 && (
                     <button
                       type="button"
-                      onClick={() => removeExperience(index)}
-                      className="absolute top-4 right-4 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                      onClick={() => removeExperience(exp.id)}
+                      className="p-1 text-gray-400 hover:text-red-600 transition-colors"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   )}
+                </div>
 
-                  <h3 className="font-semibold text-purple-900 mb-4">Experience {index + 1}</h3>
+                <div className="flex items-center space-x-2 mb-6">
+                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                    <Briefcase className="w-4 h-4 text-gray-600" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Work Experience {index + 1}
+                  </h3>
+                </div>
 
-                  {/* Company & Position */}
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-semibold text-purple-900 mb-2 block">
-                        Company Name
-                      </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField label="Company Name" required>
+                    <div className="relative">
                       <input
                         type="text"
-                        required
                         value={exp.company}
-                        onChange={(e) => updateExperience(index, 'company', e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-purple-100 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all"
-                        placeholder="Company name"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-semibold text-purple-900 mb-2 block">
-                        Position/Role
-                      </label>
-                      <input
-                        type="text"
+                        onChange={(e) =>
+                          updateExperience(exp.id, "company", e.target.value)
+                        }
+                        placeholder="e.g., Google Inc."
+                        className="form-input pl-10"
                         required
-                        value={exp.position}
-                        onChange={(e) => updateExperience(index, 'position', e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-purple-100 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all"
-                        placeholder="Your role"
                       />
+                      <Building2 className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                     </div>
-                  </div>
+                  </FormField>
 
-                  {/* Dates */}
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-semibold text-purple-900 mb-2 block">
-                        Start Date
-                      </label>
-                      <input
-                        type="month"
-                        required
-                        value={exp.startDate}
-                        onChange={(e) => updateExperience(index, 'startDate', e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-purple-100 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-semibold text-purple-900 mb-2 block">
-                        End Date
-                      </label>
-                      <input
-                        type="month"
-                        required={!exp.isCurrent}
-                        disabled={exp.isCurrent}
-                        value={exp.endDate}
-                        onChange={(e) => updateExperience(index, 'endDate', e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-purple-100 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all disabled:bg-gray-50"
-                      />
-                      <label className="flex items-center gap-2 mt-2">
-                        <input
-                          type="checkbox"
-                          checked={exp.isCurrent}
-                          onChange={(e) => updateExperience(index, 'isCurrent', e.target.checked)}
-                          className="w-4 h-4 text-purple-600 rounded"
-                        />
-                        <span className="text-xs text-purple-600">Currently working here</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <div>
-                    <label className="text-sm font-semibold text-purple-900 mb-2 block">
-                      Job Description
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={exp.description}
-                      onChange={(e) => updateExperience(index, 'description', e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-purple-100 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all resize-none"
-                      placeholder="Brief description of your role and responsibilities"
+                  <FormField label="Position / Role" required>
+                    <input
+                      type="text"
+                      value={exp.position}
+                      onChange={(e) =>
+                        updateExperience(exp.id, "position", e.target.value)
+                      }
+                      placeholder="e.g., Software Engineer"
+                      className="form-input"
+                      required
                     />
-                  </div>
+                  </FormField>
 
-                  {/* Document Upload */}
-                  <div>
-                    <label className="text-sm font-semibold text-purple-900 mb-3 block">
-                      Upload Experience Letter/Offer Letter
-                    </label>
-                    <motion.label
-                      whileHover={{ scale: 1.01 }}
-                      className="relative flex items-center justify-center p-4 border-2 border-dashed border-purple-200 rounded-xl cursor-pointer hover:border-purple-400 transition-all bg-purple-50/50"
-                    >
+                  <FormField label="Start Date" required>
+                    <div className="relative">
                       <input
-                        type="file"
-                        accept="image/*,application/pdf"
-                        onChange={(e) => handleFileUpload(index, e.target.files[0])}
-                        className="sr-only"
+                        type="date"
+                        value={exp.startDate}
+                        onChange={(e) =>
+                          updateExperience(exp.id, "startDate", e.target.value)
+                        }
+                        className="form-input pl-10"
+                        required
                       />
-                      {exp.document ? (
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="w-5 h-5 text-green-600" />
-                          <span className="text-sm text-purple-900 font-medium">Document Uploaded</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <Upload className="w-5 h-5 text-purple-400" />
-                          <span className="text-sm text-purple-600 font-medium">Click to upload</span>
-                        </div>
-                      )}
-                    </motion.label>
+                      <Calendar className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                    </div>
+                  </FormField>
+
+                  <FormField label="End Date" required={!exp.isCurrent}>
+                    <div className="relative">
+                      <input
+                        type="date"
+                        value={exp.endDate}
+                        onChange={(e) =>
+                          updateExperience(exp.id, "endDate", e.target.value)
+                        }
+                        className={`form-input pl-10 ${
+                          exp.isCurrent ? "bg-gray-50 text-gray-400" : ""
+                        }`}
+                        disabled={exp.isCurrent}
+                        required={!exp.isCurrent}
+                      />
+                      <Calendar className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                    </div>
+                  </FormField>
+
+                  <div className="md:col-span-2">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={exp.isCurrent}
+                        onChange={(e) =>
+                          updateExperience(exp.id, "isCurrent", e.target.checked)
+                        }
+                        className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-600">
+                        I currently work here
+                      </span>
+                    </label>
                   </div>
-                </motion.div>
-              ))}
 
-              {/* Add Experience Button */}
-              <motion.button
-                type="button"
-                onClick={addExperience}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-purple-300 rounded-xl text-purple-600 font-semibold hover:bg-purple-50 transition-all"
-              >
-                <Plus className="w-5 h-5" />
-                Add Another Experience
-              </motion.button>
-            </AnimatePresence>
-          )}
+                  <div className="md:col-span-2">
+                    <FormField label="Job Description">
+                      <textarea
+                        rows={3}
+                        value={exp.description}
+                        onChange={(e) =>
+                          updateExperience(exp.id, "description", e.target.value)
+                        }
+                        placeholder="Describe your responsibilities and achievements..."
+                        className="form-textarea"
+                      />
+                    </FormField>
+                  </div>
 
-          {/* Navigation */}
-          <div className="flex gap-4">
-            <motion.button
-              type="button"
-              onClick={() => router.back()}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="flex-1 border-2 border-purple-200 text-purple-700 font-semibold py-4 rounded-xl hover:bg-purple-50 transition-all"
-            >
-              ← Back
-            </motion.button>
-            <motion.button
-              type="submit"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all"
-            >
-              Continue to Admission Letters →
-            </motion.button>
-          </div>
-        </form>
-      </motion.div>
-    </ApplicationLayout>
+                  {/* Experience Letter Upload */}
+                  <div className="md:col-span-2">
+                    <FormField label="Experience / Offer Letter">
+                      <div className="space-y-3">
+                        {exp.experienceLetter ? (
+                          <div className="flex items-center justify-between border border-gray-200 rounded-lg p-3">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-blue-50 rounded flex items-center justify-center">
+                                📄
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">
+                                  {exp.experienceLetter.name}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  Experience Letter
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                window.open(exp.experienceLetter.url, "_blank")
+                              }
+                              className="text-sm text-blue-600 hover:text-blue-800"
+                            >
+                              View
+                            </button>
+                          </div>
+                        ) : (
+                          <label className="block">
+                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer">
+                              <input
+                                type="file"
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                className="sr-only"
+                                onChange={(e) => {
+                                  const file = e.target.files[0];
+                                  if (file) {
+                                    handleFileUpload(
+                                      file,
+                                      exp.id,
+                                      "experienceLetter"
+                                    );
+                                  }
+                                }}
+                              />
+                              <Upload className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+                              <p className="text-sm text-gray-600">
+                                Upload experience or offer letter
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                PDF, JPG, PNG (max 5MB)
+                              </p>
+                            </div>
+                          </label>
+                        )}
+                      </div>
+                    </FormField>
+                  </div>
+
+                  {/* Salary Slips Upload */}
+                  <div className="md:col-span-2">
+                    <FormField label="Salary Slips (Last 3 months)">
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          {exp.salarySlips.map((slip) => (
+                            <div
+                              key={slip.id}
+                              className="border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-colors"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                  <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
+                                    💵
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-gray-900 truncate">
+                                      {slip.name}
+                                    </p>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    window.open(slip.url, "_blank")
+                                  }
+                                  className="text-xs text-blue-600 hover:text-blue-800"
+                                >
+                                  View
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {exp.salarySlips.length < 3 && (
+                          <label className="block">
+                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer">
+                              <input
+                                type="file"
+                                multiple
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                className="sr-only"
+                                onChange={(e) => {
+                                  Array.from(e.target.files || []).forEach(
+                                    (file) => {
+                                      handleFileUpload(
+                                        file,
+                                        exp.id,
+                                        "salarySlip"
+                                      );
+                                    }
+                                  );
+                                }}
+                              />
+                              <div className="space-y-2">
+                                <Upload className="w-6 h-6 text-gray-400 mx-auto" />
+                                <p className="text-sm text-gray-600">
+                                  Upload salary slips
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  Minimum 3 months recommended
+                                </p>
+                              </div>
+                            </div>
+                          </label>
+                        )}
+                      </div>
+                    </FormField>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        )}
+
+        {hasExperience && experiences.length > 0 && (
+          <button
+            type="button"
+            onClick={addExperience}
+            className="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors"
+          >
+            <div className="flex items-center justify-center space-x-2">
+              <Plus className="w-5 h-5 text-gray-400" />
+              <span className="text-sm font-medium text-gray-700">
+                Add Another Work Experience
+              </span>
+            </div>
+          </button>
+        )}
+
+        <div className="flex justify-between pt-8 border-t border-gray-200">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="px-6 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+          >
+            ← Back
+          </button>
+          <button
+            type="submit"
+            className="px-8 py-3 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
+          >
+            Continue to Admission Letters
+          </button>
+        </div>
+      </form>
+    </motion.div>
   );
 }

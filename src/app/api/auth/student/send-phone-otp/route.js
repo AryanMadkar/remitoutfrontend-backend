@@ -1,10 +1,12 @@
 // app/api/auth/student/send-phone-otp/route.js
 
 import { NextResponse } from "next/server";
+
 import { connectDB } from "@/lib/db";
 import Student from "@/models/Student";
+
 import { sendSmsOtpWithGetOtp } from "@/lib/getotp";
-import { getOtpExpiry } from "@/lib/otp";
+import { generateNumericOtp, getOtpExpiry } from "@/lib/otp";
 import { errorResponse } from "@/lib/api-response";
 
 export const runtime = "nodejs";
@@ -38,12 +40,32 @@ export async function POST(req) {
       return errorResponse("Phone number not found", 400);
     }
 
-    // Send OTP via GetOTP
-    const otpResponse = await sendSmsOtpWithGetOtp(student.phoneNumber);
+    let messageId = null;
 
-    // Store message ID and expiry
-    student.phoneOtpMessageId = otpResponse.data?.message_id || null;
-    student.phoneOtpExpiresAt = getOtpExpiry(10);
+    if (process.env.NODE_ENV === "development") {
+      // Dev: generate a local OTP and log it
+      const devOtp = generateNumericOtp(6);
+      console.log(
+        `[DEV] SMS OTP for ${student.phoneNumber} (send-phone-otp):`,
+        devOtp
+      );
+
+      student.phoneOtpCode = devOtp;
+      student.phoneOtpExpiresAt = getOtpExpiry(10);
+      student.phoneOtpMessageId = null;
+    } else {
+      // Prod: Send OTP via GetOTP
+      const otpResponse = await sendSmsOtpWithGetOtp(student.phoneNumber);
+
+      // Store message ID and expiry
+      messageId = otpResponse.data?.message_id || null;
+      student.phoneOtpMessageId = messageId;
+      student.phoneOtpExpiresAt = getOtpExpiry(10);
+
+      // In prod, we don't store the actual code; GetOTP handles that
+      student.phoneOtpCode = null;
+    }
+
     await student.save();
 
     return NextResponse.json({

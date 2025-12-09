@@ -16,12 +16,12 @@ export default function Sidebar({ isOpen, onClose }) {
 
   const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/student/dashbord" },
-    { icon: Inbox, label: "Inbox", href: "/student/dashbord/inbox" },
-    {
-      icon: FileText,
-      label: "My Applications",
-      href: "/student/dashbord/myapplication",
-    },
+    // { icon: Inbox, label: "Inbox", href: "/student/dashboard/inbox" },
+    // {
+    //   icon: FileText,
+    //   label: "My Applications",
+    //   href: "/student/dashboard/myapplication",
+    // },
   ];
 
   const bottomItems = [

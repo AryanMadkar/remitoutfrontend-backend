@@ -1,8 +1,10 @@
 // app/api/auth/student/register/route.js
 
 import bcrypt from "bcryptjs";
+
 import { connectDB } from "@/lib/db";
 import Student from "@/models/Student";
+
 import { studentRegisterSchema } from "@/lib/validation";
 import { sendStudentEmailOtp } from "@/lib/mailer";
 import { sendSmsOtpWithGetOtp } from "@/lib/getotp";
@@ -61,6 +63,7 @@ export async function POST(req) {
       if (existing.email === email) {
         return errorResponse("Email is already registered as a student", 409);
       }
+
       if (existing.phoneNumber === phoneNumber) {
         return errorResponse(
           "Phone number is already registered for another student",
@@ -71,6 +74,7 @@ export async function POST(req) {
 
     // 4) Hash password
     const passwordHash = await bcrypt.hash(password, 10);
+
     const emailOtp = generateNumericOtp(6);
     const otpExpiry = getOtpExpiry(10);
 
@@ -91,15 +95,18 @@ export async function POST(req) {
 
     // 6) Send SMS OTP
     let smsData;
+    let phoneOtpCode = null;
+
     try {
       if (process.env.NODE_ENV === "development") {
-        const smsOtp = generateNumericOtp(6);
-        console.log(`[DEV] SMS OTP for ${phoneNumber}:`, smsOtp);
+        phoneOtpCode = generateNumericOtp(6);
+        console.log(`[DEV] SMS OTP for ${phoneNumber}:`, phoneOtpCode);
         smsData = {
           expire_date: otpExpiry.toISOString(),
           message_id: `mock_sms_${Date.now()}`,
         };
       } else {
+        // Production: use GetOTP
         smsData = await sendSmsOtpWithGetOtp(phoneNumber);
       }
     } catch (err) {
@@ -119,18 +126,20 @@ export async function POST(req) {
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       phoneNumber: phoneNumber.trim(),
+
       emailOtp,
       emailOtpExpiresAt: otpExpiry,
+
+      phoneOtpCode, // only non-null in development
       phoneOtpExpiresAt: smsData?.expire_date
         ? new Date(smsData.expire_date)
         : otpExpiry,
-      isEmailVerified: process.env.NODE_ENV === "development",
-      isPhoneVerified: process.env.NODE_ENV === "development",
+
+      isEmailVerified: false,
+      isPhoneVerified: false,
       phoneOtpMessageId,
-      registrationStatus:
-        process.env.NODE_ENV === "development"
-          ? "completed"
-          : "pending_phone_verification",
+
+      registrationStatus: "pending_phone_verification",
     });
 
     console.log(
@@ -142,7 +151,7 @@ export async function POST(req) {
       {
         studentId: String(student._id),
         email: student.email,
-        requiresVerification: process.env.NODE_ENV !== "development",
+        requiresVerification: true,
       },
       "Student registered. OTPs sent to email and phone.",
       201

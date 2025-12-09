@@ -15,4 +15,5 @@ export default {
   Nbfc,
   Admin,
   WorkExperience,
+  StudentQuestionnaire, // NEW
 };

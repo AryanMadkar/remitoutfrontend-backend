@@ -1,8 +1,10 @@
 // app/api/auth/student/verify-phone/route.js
 
 import { NextResponse } from "next/server";
+
 import { connectDB } from "@/lib/db";
 import Student from "@/models/Student";
+
 import { verifySmsOtpWithGetOtp } from "@/lib/getotp";
 import { errorResponse } from "@/lib/api-response";
 
@@ -38,17 +40,25 @@ export async function POST(req) {
       return errorResponse("OTP has expired", 400);
     }
 
-    // Verify OTP with GetOTP service
-    const verificationResult = await verifySmsOtpWithGetOtp({ code: otp });
-
-    if (!verificationResult) {
-      return errorResponse("Invalid OTP", 400);
+    if (process.env.NODE_ENV === "development") {
+      // Dev: verify against locally stored OTP
+      if (student.phoneOtpCode !== otp) {
+        return errorResponse("Invalid OTP", 400);
+      }
+    } else {
+      // Prod: verify via GetOTP service
+      const verificationResult = await verifySmsOtpWithGetOtp({ code: otp });
+      if (!verificationResult) {
+        return errorResponse("Invalid OTP", 400);
+      }
     }
 
     // Mark phone as verified
     student.isPhoneVerified = true;
+    student.phoneOtpCode = null;
     student.phoneOtpMessageId = null;
     student.phoneOtpExpiresAt = null;
+
     await student.save();
 
     return NextResponse.json({

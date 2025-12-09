@@ -1,8 +1,10 @@
 // app/api/auth/student/resend-email-otp/route.js
 
 import { NextResponse } from "next/server";
+
 import { connectDB } from "@/lib/db";
 import Student from "@/models/Student";
+
 import { generateNumericOtp, getOtpExpiry } from "@/lib/otp";
 import { sendStudentEmailOtp } from "@/lib/mailer";
 import { errorResponse } from "@/lib/api-response";
@@ -38,8 +40,12 @@ export async function POST(req) {
     student.emailOtpExpiresAt = emailOtpExpiresAt;
     await student.save();
 
-    // Send OTP
-    await sendStudentEmailOtp(email, emailOtp);
+    // Send OTP (dev: console, prod: email)
+    if (process.env.NODE_ENV === "development") {
+      console.log(`[DEV] Resend Email OTP for ${email}:`, emailOtp);
+    } else {
+      await sendStudentEmailOtp(email, emailOtp);
+    }
 
     return NextResponse.json({
       success: true,

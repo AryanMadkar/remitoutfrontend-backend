@@ -55,6 +55,10 @@ const StudentSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    phoneOtpCode: {
+      type: String,
+      default: null,
+    },
     phoneOtpMessageId: String,
     // In StudentSchema, add:
     academicRecord: {

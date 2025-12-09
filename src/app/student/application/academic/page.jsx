@@ -1,381 +1,516 @@
 // app/student/application/academic/page.jsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, BookOpen, Award, FileText, Upload } from "lucide-react";
-import FormField from "@/components/application/FormField";
-import DocumentUpload from "@/components/application/DocumentUpload";
+import { motion } from "framer-motion";
+import {
+  GraduationCap,
+  Upload,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+  ArrowRight,
+  ArrowLeft,
+  BookOpen,
+  XCircle,
+} from "lucide-react";
+import axios from "@/lib/axios";
 
-const EDUCATION_LEVELS = [
-  { value: "10TH", label: "10th Grade", key: "tenth" },
-  { value: "12TH", label: "12th Grade", key: "twelfth" },
-  { value: "BACHELORS", label: "Bachelor's Degree", key: "bachelors" },
-  { value: "MASTERS", label: "Master's Degree", key: "masters" },
-  { value: "DIPLOMA", label: "Diploma", key: "diploma" },
-  { value: "OTHER", label: "Other", key: "other" },
+const STEPS = [
+  {
+    id: "class10",
+    title: "Class 10th Marksheet",
+    icon: BookOpen,
+    accept: ".pdf,.jpg,.jpeg,.png",
+  },
+  {
+    id: "class12",
+    title: "Class 12th Marksheet",
+    icon: BookOpen,
+    accept: ".pdf,.jpg,.jpeg,.png",
+  },
+  {
+    id: "graduation",
+    title: "Graduation Documents",
+    icon: GraduationCap,
+    accept: ".pdf",
+  },
 ];
 
-export default function AcademicPage() {
+export default function AcademicRecordsPage() {
   const router = useRouter();
-  const [records, setRecords] = useState([
-    {
-      id: 1,
-      level: "10TH",
-      institution: "",
-      board: "",
-      year: "",
-      percentage: "",
-      documents: [],
-    },
-  ]);
-  const [uploadingDocs, setUploadingDocs] = useState({});
+  const [currentStep, setCurrentStep] = useState(0);
+  const [documents, setDocuments] = useState({
+    class10: null,
+    class12: null,
+    graduation: null,
+  });
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [completedSteps, setCompletedSteps] = useState({
+    class10: false,
+    class12: false,
+    graduation: false,
+  });
+  const [aiServerHealth, setAiServerHealth] = useState(null);
+  const [checkingHealth, setCheckingHealth] = useState(true);
 
-  const addRecord = () => {
-    setRecords([
-      ...records,
-      {
-        id: Date.now(),
-        level: "",
-        institution: "",
-        board: "",
-        year: "",
-        percentage: "",
-        documents: [],
-      },
-    ]);
-  };
+  useEffect(() => {
+    checkExistingRecords();
+    checkAiServerHealth();
+  }, []);
 
-  const removeRecord = (id) => {
-    if (records.length > 1) {
-      setRecords(records.filter((record) => record.id !== id));
+  const checkAiServerHealth = async () => {
+    try {
+      const response = await axios.get("/api/student/academic/health");
+      setAiServerHealth(response.data.success);
+      console.log(
+        "🏥 Academic AI Server Health:",
+        response.data.success ? "Online" : "Offline"
+      );
+    } catch (err) {
+      setAiServerHealth(false);
+      console.error("Academic AI server health check failed:", err);
+    } finally {
+      setCheckingHealth(false);
     }
   };
 
-  const updateRecord = (id, field, value) => {
-    setRecords(
-      records.map((record) =>
-        record.id === id ? { ...record, [field]: value } : record
-      )
-    );
-  };
-
-  const handleDocumentUpload = async (file, recordId) => {
-    setUploadingDocs((prev) => ({ ...prev, [recordId]: true }));
-    
-    // Simulate upload
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    const objectUrl = URL.createObjectURL(file);
-    const updatedRecords = records.map((record) => {
-      if (record.id === recordId) {
-        return {
-          ...record,
-          documents: [
-            ...record.documents,
-            {
-              id: Date.now(),
-              url: objectUrl,
-              name: file.name,
-              type: file.type,
-            },
-          ],
-        };
+  const checkExistingRecords = async () => {
+    try {
+      const class10Res = await axios.get("/api/student/academic/class10");
+      if (class10Res.data.success && class10Res.data.data.exists) {
+        setCompletedSteps((prev) => ({ ...prev, class10: true }));
       }
-      return record;
-    });
-    
-    setRecords(updatedRecords);
-    setUploadingDocs((prev) => ({ ...prev, [recordId]: false }));
-  };
 
-  const removeDocument = (recordId, docId) => {
-    const updatedRecords = records.map((record) => {
-      if (record.id === recordId) {
-        const doc = record.documents.find((d) => d.id === docId);
-        if (doc?.url) {
-          URL.revokeObjectURL(doc.url);
-        }
-        return {
-          ...record,
-          documents: record.documents.filter((d) => d.id !== docId),
-        };
+      const class12Res = await axios.get("/api/student/academic/class12");
+      if (class12Res.data.success && class12Res.data.data.exists) {
+        setCompletedSteps((prev) => ({ ...prev, class12: true }));
       }
-      return record;
-    });
-    
-    setRecords(updatedRecords);
+
+      const graduationRes = await axios.get("/api/student/academic/graduation");
+      if (graduationRes.data.success && graduationRes.data.data.exists) {
+        setCompletedSteps((prev) => ({ ...prev, graduation: true }));
+      }
+
+      if (completedSteps.class10 && !completedSteps.class12) {
+        setCurrentStep(1);
+      } else if (completedSteps.class10 && completedSteps.class12) {
+        setCurrentStep(2);
+      }
+    } catch (err) {
+      console.error("Error checking existing records:", err);
+    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Validate required records
-    const isValid = records.every(
-      (record) =>
-        record.level &&
-        record.institution &&
-        record.year &&
-        record.percentage
-    );
-    
-    if (!isValid) {
-      alert("Please fill in all required fields");
+  const handleFileSelect = (stepId, file) => {
+    setDocuments((prev) => ({
+      ...prev,
+      [stepId]: file,
+    }));
+    setError("");
+  };
+
+  const handleRemoveFile = (stepId) => {
+    setDocuments((prev) => ({
+      ...prev,
+      [stepId]: null,
+    }));
+  };
+
+  const handleSubmitStep = async () => {
+    const stepId = STEPS[currentStep].id;
+    const file = documents[stepId];
+
+    if (!file) {
+      setError("Please upload a document before proceeding");
       return;
     }
-    
-    // API call would go here
-    router.push("/student/application/work");
-  };
 
-  const getLevelIcon = (level) => {
-    switch (level) {
-      case "10TH":
-      case "12TH":
-        return <BookOpen className="w-4 h-4" />;
-      case "BACHELORS":
-      case "MASTERS":
-        return <Award className="w-4 h-4" />;
-      default:
-        return <FileText className="w-4 h-4" />;
+    // Check AI server health
+    if (aiServerHealth === false) {
+      setError(
+        "⚠️ AI processing server is currently unavailable. Please try again later."
+      );
+      return;
+    }
+
+    setUploading(true);
+    setError("");
+    setSuccess("");
+    setUploadProgress(0);
+
+    try {
+      const formData = new FormData();
+      formData.append(stepId, file);
+
+      const endpoint = `/api/student/academic/${stepId}`;
+
+      console.log(`📤 Uploading ${stepId} to ${endpoint}...`);
+
+      const response = await axios.post(endpoint, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress(percentCompleted);
+        },
+      });
+
+      if (response.data.success) {
+        setSuccess(`✅ ${STEPS[currentStep].title} processed successfully!`);
+        setCompletedSteps((prev) => ({ ...prev, [stepId]: true }));
+
+        setTimeout(() => {
+          if (currentStep < STEPS.length - 1) {
+            setCurrentStep(currentStep + 1);
+            setSuccess("");
+            setError("");
+          } else {
+            setTimeout(() => {
+              router.push("/student/dashboard");
+            }, 2000);
+          }
+        }, 2000);
+      } else {
+        setError(response.data.message || "Failed to process document");
+      }
+    } catch (err) {
+      console.error(`${stepId} submission error:`, err);
+
+      if (err.response?.status === 403) {
+        setError(
+          err.response.data.message || "This record is already verified"
+        );
+      } else if (err.response?.status === 503) {
+        setError(
+          "⚠️ AI processing server is unavailable. Please try again later."
+        );
+      } else if (err.response?.status === 401) {
+        setError("🔒 Session expired. Please login again.");
+        setTimeout(() => router.push("/login"), 2000);
+      } else {
+        setError(
+          err.response?.data?.message ||
+            "Failed to process document. Please try again."
+        );
+      }
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
     }
   };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-8"
-    >
-      <div>
-        <div className="flex items-center space-x-3 mb-2">
-          <div className="p-2 bg-blue-50 rounded-lg">
-            <Award className="w-5 h-5 text-blue-600" />
-          </div>
-          <h2 className="text-2xl font-light text-gray-900">Academic Records</h2>
+  if (checkingHealth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-purple-600 mx-auto mb-4" />
+          <p className="text-gray-700 font-medium">Checking server status...</p>
         </div>
-        <p className="text-gray-600">
-          Provide your educational background and upload supporting documents
-        </p>
       </div>
+    );
+  }
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <AnimatePresence>
-          {records.map((record, index) => (
-            <motion.div
-              key={record.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, height: 0 }}
-              className="relative border border-gray-200 rounded-lg p-6 bg-white"
-            >
-              <div className="absolute top-4 right-4">
-                {records.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeRecord(record.id)}
-                    className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+  const currentStepData = STEPS[currentStep];
+  const Icon = currentStepData.icon;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Progress Indicator */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            {STEPS.map((step, index) => (
+              <div key={step.id} className="flex items-center flex-1">
+                <div className="flex flex-col items-center flex-1">
+                  <div
+                    className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all ${
+                      completedSteps[step.id]
+                        ? "bg-green-500 text-white"
+                        : index === currentStep
+                        ? "bg-purple-600 text-white"
+                        : "bg-gray-200 text-gray-500"
+                    }`}
                   >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                    {completedSteps[step.id] ? (
+                      <CheckCircle size={24} />
+                    ) : (
+                      <span>{index + 1}</span>
+                    )}
+                  </div>
+                  <p
+                    className={`mt-2 text-sm font-medium text-center ${
+                      index === currentStep
+                        ? "text-purple-600"
+                        : completedSteps[step.id]
+                        ? "text-green-600"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {step.title}
+                  </p>
+                </div>
+                {index < STEPS.length - 1 && (
+                  <div
+                    className={`h-1 flex-1 mx-4 transition-all ${
+                      completedSteps[step.id] ? "bg-green-500" : "bg-gray-200"
+                    }`}
+                  />
                 )}
               </div>
+            ))}
+          </div>
+        </div>
 
-              <div className="flex items-center space-x-2 mb-6">
-                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-medium text-gray-700">
-                    {index + 1}
-                  </span>
-                </div>
-                <h3 className="text-lg font-medium text-gray-900">
-                  Academic Record {index + 1}
-                </h3>
+        {/* Main Card */}
+        <motion.div
+          key={currentStep}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className="bg-white rounded-2xl shadow-xl p-8 border border-purple-100"
+        >
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-3 bg-purple-100 rounded-lg">
+                <Icon className="w-6 h-6 text-purple-600" />
               </div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                {currentStepData.title}
+              </h1>
+            </div>
+            <p className="text-gray-700">
+              Upload your {currentStepData.title.toLowerCase()} for AI-powered
+              data extraction
+            </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField label="Education Level" required>
-                  <div className="relative">
-                    <select
-                      value={record.level}
-                      onChange={(e) =>
-                        updateRecord(record.id, "level", e.target.value)
-                      }
-                      className="form-select pl-10"
-                      required
-                    >
-                      <option value="">Select level</option>
-                      {EDUCATION_LEVELS.map((level) => (
-                        <option key={level.value} value={level.value}>
-                          {level.label}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                      {getLevelIcon(record.level)}
+            {/* AI Server Status */}
+            {aiServerHealth !== null && (
+              <div
+                className={`mt-4 p-3 rounded-lg flex items-center gap-3 ${
+                  aiServerHealth
+                    ? "bg-green-50 border border-green-200"
+                    : "bg-red-50 border border-red-200"
+                }`}
+              >
+                {aiServerHealth ? (
+                  <CheckCircle className="text-green-600" size={20} />
+                ) : (
+                  <XCircle className="text-red-600" size={20} />
+                )}
+                <div>
+                  <p
+                    className={`text-sm font-medium ${
+                      aiServerHealth ? "text-green-900" : "text-red-900"
+                    }`}
+                  >
+                    {aiServerHealth
+                      ? "✅ AI Processing Server Online"
+                      : "❌ AI Processing Server Unavailable"}
+                  </p>
+                  {!aiServerHealth && (
+                    <p className="text-xs text-red-700 mt-1">
+                      The AI extraction server is currently down. Please try
+                      again later.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Success Message */}
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3"
+            >
+              <CheckCircle className="text-green-600" size={20} />
+              <p className="text-sm font-medium text-green-900">{success}</p>
+            </motion.div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3"
+            >
+              <AlertCircle className="text-red-600" size={20} />
+              <p className="text-sm font-medium text-red-900">{error}</p>
+            </motion.div>
+          )}
+
+          {/* File Upload Area */}
+          <div className="mb-8">
+            <label
+              htmlFor={`file-${currentStepData.id}`}
+              className={`relative block border-2 border-dashed rounded-xl p-8 transition-all ${
+                documents[currentStepData.id]
+                  ? "border-purple-300 bg-purple-50 cursor-default"
+                  : aiServerHealth === false
+                  ? "border-gray-300 bg-gray-50 cursor-not-allowed opacity-50"
+                  : "border-gray-300 hover:border-purple-400 hover:bg-purple-50 cursor-pointer"
+              }`}
+            >
+              <input
+                id={`file-${currentStepData.id}`}
+                type="file"
+                accept={currentStepData.accept}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileSelect(currentStepData.id, file);
+                }}
+                className="sr-only"
+                disabled={
+                  uploading ||
+                  completedSteps[currentStepData.id] ||
+                  aiServerHealth === false
+                }
+              />
+
+              {documents[currentStepData.id] ? (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-purple-100 rounded-lg">
+                      <Upload className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {documents[currentStepData.id].name}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {(
+                          documents[currentStepData.id].size /
+                          1024 /
+                          1024
+                        ).toFixed(2)}{" "}
+                        MB
+                      </p>
                     </div>
                   </div>
-                </FormField>
-
-                <FormField label="Institution Name" required>
-                  <input
-                    type="text"
-                    value={record.institution}
-                    onChange={(e) =>
-                      updateRecord(record.id, "institution", e.target.value)
-                    }
-                    placeholder="e.g., Delhi Public School"
-                    className="form-input"
-                    required
-                  />
-                </FormField>
-
-                <FormField label="Board / University">
-                  <input
-                    type="text"
-                    value={record.board}
-                    onChange={(e) =>
-                      updateRecord(record.id, "board", e.target.value)
-                    }
-                    placeholder="e.g., CBSE, Delhi University"
-                    className="form-input"
-                  />
-                </FormField>
-
-                <FormField label="Year of Completion" required>
-                  <input
-                    type="number"
-                    min="1950"
-                    max="2025"
-                    value={record.year}
-                    onChange={(e) =>
-                      updateRecord(record.id, "year", e.target.value)
-                    }
-                    placeholder="e.g., 2023"
-                    className="form-input"
-                    required
-                  />
-                </FormField>
-
-                <FormField label="Percentage / GPA" required>
-                  <input
-                    type="text"
-                    value={record.percentage}
-                    onChange={(e) =>
-                      updateRecord(record.id, "percentage", e.target.value)
-                    }
-                    placeholder="e.g., 85% or 3.8"
-                    className="form-input"
-                    required
-                  />
-                </FormField>
-
-                <div className="md:col-span-2">
-                  <FormField label="Supporting Documents">
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {record.documents.map((doc) => (
-                          <div
-                            key={doc.id}
-                            className="relative border border-gray-200 rounded p-3 hover:border-blue-300 transition-colors"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-                                📄
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900 truncate">
-                                  {doc.name}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {doc.type.split("/").pop().toUpperCase()}
-                                </p>
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => removeDocument(record.id, doc.id)}
-                              className="absolute top-1 right-1 p-1 hover:bg-red-50 rounded"
-                            >
-                              <Trash2 className="w-3 h-3 text-red-500" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div>
-                        <label className="block mb-2">
-                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer">
-                            <input
-                              type="file"
-                              multiple
-                              accept=".pdf,.jpg,.jpeg,.png"
-                              className="sr-only"
-                              onChange={(e) => {
-                                Array.from(e.target.files || []).forEach((file) => {
-                                  handleDocumentUpload(file, record.id);
-                                });
-                              }}
-                            />
-                            <div className="space-y-2">
-                              {uploadingDocs[record.id] ? (
-                                <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
-                              ) : (
-                                <>
-                                  <Upload className="w-6 h-6 text-gray-400 mx-auto" />
-                                  <p className="text-sm text-gray-600">
-                                    Click or drag to upload documents
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    Marksheets, transcripts, certificates
-                                  </p>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </label>
-                      </div>
-                    </div>
-                  </FormField>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleRemoveFile(currentStepData.id);
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 transition-colors"
+                    disabled={uploading}
+                  >
+                    Remove
+                  </button>
                 </div>
+              ) : (
+                <div className="text-center">
+                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-lg font-medium text-gray-700 mb-1">
+                    Click to upload or drag and drop
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {currentStepData.id === "graduation"
+                      ? "PDF only, up to 10MB"
+                      : "PDF, JPG, PNG up to 10MB"}
+                  </p>
+                </div>
+              )}
+            </label>
+
+            {completedSteps[currentStepData.id] && (
+              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+                <CheckCircle className="text-green-600" size={20} />
+                <p className="text-sm font-medium text-green-900">
+                  ✅ This document has already been processed and extracted
+                </p>
               </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-
-        <button
-          type="button"
-          onClick={addRecord}
-          className="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors"
-        >
-          <div className="flex items-center justify-center space-x-2">
-            <Plus className="w-5 h-5 text-gray-400" />
-            <span className="text-sm font-medium text-gray-700">
-              Add Another Academic Record
-            </span>
+            )}
           </div>
-          <p className="text-xs text-gray-500 mt-1">
-            Add your previous qualifications
-          </p>
-        </button>
 
-        <div className="flex justify-between pt-8 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="px-6 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
-          >
-            ← Back
-          </button>
-          <button
-            type="submit"
-            className="px-8 py-3 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
-          >
-            Continue to Work Experience
-          </button>
+          {/* Upload Progress */}
+          {uploading && uploadProgress > 0 && (
+            <div className="mb-6 space-y-2">
+              <div className="flex justify-between text-sm text-gray-700">
+                <span>🤖 Processing with AI...</span>
+                <span>{uploadProgress}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Navigation Buttons */}
+          <div className="flex items-center justify-between pt-6 border-t border-purple-100">
+            <button
+              type="button"
+              onClick={() => {
+                if (currentStep > 0) {
+                  setCurrentStep(currentStep - 1);
+                  setError("");
+                  setSuccess("");
+                } else {
+                  router.back();
+                }
+              }}
+              className="px-6 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors disabled:opacity-50"
+              disabled={uploading}
+            >
+              <ArrowLeft className="inline mr-2" size={18} />
+              {currentStep === 0 ? "Back" : "Previous"}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSubmitStep}
+              disabled={
+                uploading ||
+                !documents[currentStepData.id] ||
+                completedSteps[currentStepData.id] ||
+                aiServerHealth === false
+              }
+              className="px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Processing with AI...
+                </>
+              ) : currentStep === STEPS.length - 1 ? (
+                <>
+                  Complete
+                  <CheckCircle size={18} />
+                </>
+              ) : (
+                <>
+                  Continue
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Help Text */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            🤖 AI-powered extraction • 🔒 Secure processing • ⚡ Instant data
+            capture
+          </p>
         </div>
-      </form>
-    </motion.div>
+      </div>
+    </div>
   );
 }

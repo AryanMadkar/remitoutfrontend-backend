@@ -13,38 +13,67 @@ const StudentQuestionnaireSchema = new Schema(
       index: true,
     },
 
+    // Personal Information
     personalInfo: {
       fullName: { type: String, default: "" },
       email: { type: String, default: "" },
       phoneNumber: { type: String, default: "" },
       city: { type: String, default: "" },
       referralCode: { type: String, default: "" },
-      howDidYouFindUs: { type: String, default: "" }, // dropdown
+      howDidYouFindUs: { type: String, default: "" },
     },
 
+    // Course/Education Details
     courseDetails: {
-      targetCountries: { type: [String], default: [] }, // multi‑select
-      degreeTypes: { type: [String], default: [] }, // Bachelors / Masters / Others
-      courseDurationMonths: { type: Number, default: null }, // 12 / 24 / 36 / 42
+      targetCountry: { type: String, default: "" },
+      degreeType: { type: String, default: "" },
+      courseDuration: { type: String, default: "" },
+      university: { type: String, default: "" },
+      program: { type: String, default: "" },
+      intakeYear: { type: String, default: "" },
+      loanAmount: { type: String, default: "" },
+      currency: { type: String, default: "USD" },
+      includeLivingExpenses: { type: Boolean, default: true },
     },
 
-    // You can extend these sections with more fields as you add more question cards
+    // Academic Details (extensible)
     academicDetails: {
       data: { type: Schema.Types.Mixed, default: {} },
     },
 
+    // Co-Borrower Information
     coBorrowerInfo: {
       data: { type: Schema.Types.Mixed, default: {} },
     },
 
+    // Document Upload
     documentUpload: {
       data: { type: Schema.Types.Mixed, default: {} },
+    },
+
+    // Completion Status
+    isCompleted: {
+      type: Boolean,
+      default: false,
+    },
+    completedAt: {
+      type: Date,
+      default: null,
+    },
+
+    // Track last updated section
+    lastUpdatedSection: {
+      type: String,
+      default: null,
     },
   },
   {
     timestamps: true,
   }
 );
+
+// Compound index for efficient queries
+StudentQuestionnaireSchema.index({ student: 1, isCompleted: 1 });
 
 export default mongoose.models.StudentQuestionnaire ||
   mongoose.model("StudentQuestionnaire", StudentQuestionnaireSchema);

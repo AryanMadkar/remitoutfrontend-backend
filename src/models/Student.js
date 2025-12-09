@@ -59,12 +59,22 @@ const StudentSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-    phoneOtpMessageId: String,
-    // In StudentSchema, add:
+    questionnaire: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "StudentQuestionnaire",
+      default: null,
+    },
     academicRecord: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "AcademicRecord",
+      default: null,
     },
+    hasCompletedAcademicRecords: {
+      type: Boolean,
+      default: false,
+    },
+    phoneOtpMessageId: String,
+    // In StudentSchema, add:
 
     // Consultant link
     consultant: {

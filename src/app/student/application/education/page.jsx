@@ -112,20 +112,7 @@ export default function EducationPlanPage() {
               Start with your destination and academic goals
             </p>
 
-            {hasExisting && (
-              <div className="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-lg flex items-start gap-3">
-                <AlertCircle className="text-purple-600 mt-0.5" size={20} />
-                <div>
-                  <p className="text-sm font-medium text-purple-900">
-                    Existing Questionnaire Found
-                  </p>
-                  <p className="text-sm text-purple-700 mt-1">
-                    You've already filled this form. You can update it if
-                    needed.
-                  </p>
-                </div>
-              </div>
-            )}
+            {hasExisting && router.push("/student/application/kyc")}
           </div>
 
           {/* Success Message */}

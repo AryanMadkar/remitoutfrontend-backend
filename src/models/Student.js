@@ -152,6 +152,10 @@ const StudentSchema = new mongoose.Schema(
         ref: "WorkExperience",
         default: null,
       },
+      hasCompletedWorkExperience: {
+        type: Boolean,
+        default: false,
+      },
 
       // ===== CONFIDENCE & VERIFICATION =====
       verificationConfidence: {

@@ -77,6 +77,7 @@ export default function KYCPage() {
             setError(
               "⛔ Your KYC is already verified! You cannot submit documents again."
             );
+            router.push("/student/application/academic");
           } else if (status === "manual_review") {
             setError(
               "⏳ Your KYC is under manual review. Please wait for the review to complete."

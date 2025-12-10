@@ -26,7 +26,7 @@ export const dynamic = "force-dynamic";
 function getRedirectPathForRole(role) {
   switch (role) {
     case "student":
-      return "/student/dashboard";
+      return "/student";
     case "admin":
       return "/admin/dashboard";
     case "nbfc":

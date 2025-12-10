@@ -31,7 +31,7 @@ const Page = () => {
         return;
       }
 
-      const redirectPath = data.data?.redirectPath || "/student/dashboard";
+      const redirectPath = data.data?.redirectPath || "/student";
 
       // Cookie is already set by backend, just navigate
       router.push(redirectPath);

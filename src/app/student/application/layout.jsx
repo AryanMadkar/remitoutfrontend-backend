@@ -21,16 +21,6 @@ export default function StudentApplicationLayout({ children }) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <header className="mb-12">
-          <h1 className="text-3xl font-light tracking-tight text-gray-900">
-            Education Loan Application
-          </h1>
-          <p className="text-gray-600 mt-2 font-light">
-            Complete your application in 7 steps
-          </p>
-          <ApplicationProgress steps={steps} />
-        </header>
-
         <main className="bg-white border border-gray-200 shadow-sm rounded-lg p-8">
           {children}
         </main>

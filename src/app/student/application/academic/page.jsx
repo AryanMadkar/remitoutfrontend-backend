@@ -174,7 +174,7 @@ export default function AcademicRecordsPage() {
             setError("");
           } else {
             setTimeout(() => {
-              router.push("/student/dashboard");
+              router.push("/student/work-experience");
             }, 2000);
           }
         }, 2000);
@@ -430,8 +430,11 @@ export default function AcademicRecordsPage() {
               <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
                 <CheckCircle className="text-green-600" size={20} />
                 <p className="text-sm font-medium text-green-900">
-                  ✅ This document has already been processed and extracted
+                  ✅ This document has already been processed and extracted. Redirecting...
                 </p>
+                {setTimeout(() => {
+                  router.push("/student/application/work-experience");
+                }, 2000)}
               </div>
             )}
           </div>

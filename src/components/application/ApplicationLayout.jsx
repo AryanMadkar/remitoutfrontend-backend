@@ -12,9 +12,17 @@ const STEPS = [
   { id: 1, name: "Education Details", path: "/student/application/education" },
   { id: 2, name: "KYC Verification", path: "/student/application/kyc" },
   { id: 3, name: "Academic Records", path: "/student/application/academic" },
-  { id: 4, name: "Work Experience", path: "/student/application/work-experience" },
+  {
+    id: 4,
+    name: "Work Experience",
+    path: "/student/application/work-experience",
+  },
   { id: 5, name: "Admission Letters", path: "/student/application/admission" },
-  { id: 6, name: "Co-Borrower Details", path: "/student/application/co-borrower" },
+  {
+    id: 6,
+    name: "Co-Borrower Details",
+    path: "/student/application/co-borrower",
+  },
 ];
 
 const NBFC_PARTNERS = [
@@ -22,19 +30,19 @@ const NBFC_PARTNERS = [
     name: "HDFC CredEdu",
     tag: "Fast approval for top universities",
     rate: "From 9.5% p.a.",
-    color: "from-orange-500 to-orange-600"
+    color: "from-orange-500 to-orange-600",
   },
   {
     name: "Axis EduPrime",
     tag: "No processing fee* for select profiles",
     rate: "From 10.2% p.a.",
-    color: "from-purple-500 to-purple-600"
+    color: "from-purple-500 to-purple-600",
   },
   {
     name: "Bajaj FinServe",
     tag: "Flexible EMIs & partial disbursals",
     rate: "From 11.0% p.a.",
-    color: "from-orange-600 to-purple-500"
+    color: "from-orange-600 to-purple-500",
   },
 ];
 
@@ -53,7 +61,8 @@ export default function ApplicationLayout({ children }) {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const detectedIndex = STEPS.findIndex((step) => pathname.startsWith(step.path)) + 1;
+  const detectedIndex =
+    STEPS.findIndex((step) => pathname.startsWith(step.path)) + 1;
   const activeStep = detectedIndex || 1;
 
   // Reduce animation complexity on mobile or if user prefers reduced motion
@@ -90,7 +99,7 @@ export default function ApplicationLayout({ children }) {
       {!shouldReduceMotion && (
         <>
           <motion.div
-            className="fixed top-20 right-20 h-96 w-96 rounded-full bg-gradient-to-br from-orange-200/20 to-purple-200/20 blur-3xl"
+            className="fixed top-20 right-20 h-96 w-96 rounded-full bg-gradient-to-br from-orange-200/20 to-purple-900/20 blur-3xl"
             animate={{
               scale: [1, 1.2, 1],
               rotate: [0, 90, 0],
@@ -117,22 +126,6 @@ export default function ApplicationLayout({ children }) {
           />
         </>
       )}
-
-      {/* Navbar with enhanced styling */}
-      <motion.div
-        className="sticky top-0 z-50 border-b border-orange-200/50 bg-white/80 backdrop-blur-xl shadow-sm"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 100, damping: 20 }}
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Navbar
-            onMenuClick={() => {}}
-            onProfileClick={() => {}}
-            userName={userName}
-          />
-        </div>
-      </motion.div>
 
       <motion.main
         className="mx-auto flex max-w-7xl flex-col gap-6 px-4 pb-12 pt-8 sm:px-6 lg:flex-row lg:px-8"
@@ -319,7 +312,8 @@ export default function ApplicationLayout({ children }) {
                 Indicative education loan partners mapped to your profile.
               </p>
               <p className="mt-2 text-xs text-gray-500">
-                Final offers depend on your documents, co-borrower strength and NBFC policies.
+                Final offers depend on your documents, co-borrower strength and
+                NBFC policies.
               </p>
             </div>
 
